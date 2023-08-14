@@ -31,11 +31,11 @@ for directory in $first_level_dirs; do
     # Configure workspaces here
     'server')
       echo -e "\nRunning pre-commit hooks for ${green}$directory${reset} workspace"
-      ./.githooks/pre-commit-$directory
+      ./pre-commit-$directory
       ;;
     'client')
       echo -e "\n\nRunning pre-commit hooks for ${blue}$directory${reset} workspace"
-      ./.githooks/pre-commit-$directory
+      ./pre-commit-$directory
       ;;
     *)
       ;;
