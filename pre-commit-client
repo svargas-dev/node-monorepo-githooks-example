@@ -1,0 +1,46 @@
+#!/bin/sh
+
+workspace="client"
+
+# only get files from this workspace
+client_staged_changes_full_path=$(git diff --name-only --cached | xargs git ls-files --cached | grep "^$workspace/")
+# remove workspace prefix
+client_staged_changes=$(echo "$client_staged_changes_full_path" | sed "s/^$workspace\///")
+
+ts_js_staged_changes_full_path=$(echo "$client_staged_changes_full_path" | grep -E "\.(js|jsx|ts|tsx)$")
+ts_js_staged_changes=$(echo "$client_staged_changes" | grep -E "\.(js|jsx|ts|tsx)$")
+
+if ! [ -z $ts_js_staged_changes ]; then
+  printf "\nℹ️ Type checking workspace\n⚠️ This includes unstaged changes" && \
+  npm run ts:check -w=$workspace && \
+  printf "\nℹ️ Linting staged files in workspace\n" && \
+  npm run lint -w=$workspace -- --fix --max-warnings 0 --file $ts_js_staged_changes
+  # check the exit code
+  if [ $? -ne 0 ]; then
+    exit 1
+  fi
+  echo "$ts_js_staged_changes_full_path" | xargs git add
+else
+  printf "\n⛷️ No staged changes to TypeScript or JavaScript: Skipping type checking and linting\n"
+fi
+
+# TODO add Stylelint here e.g.
+# style_staged_changes=$(echo "$client_staged_changes_full_path" | grep -E "\.(css|scss)$")
+# if ! [ -z $style_staged_changes ]; then
+#   printf "\nℹ️ Linting staged styles in workspace" && \
+#   ...
+# else
+#   printf "⛷️ No staged changes to styles: Skipping linting"
+# fi
+
+prettier_staged_changes_full_path=$(echo "$client_staged_changes_full_path" | grep -E "\.(js|jsx|ts|tsx|json|css|scss)$")
+if [ -n "$prettier_staged_changes_full_path" ]; then
+  printf "\nℹ️ Formatting staged TypeScript, JavaScript, JSON and Styles in workspace\n" && \
+  echo "$prettier_staged_changes_full_path" | xargs ./node_modules/.bin/prettier --ignore-unknown --write
+  # Commit formatted files
+  echo "$prettier_staged_changes_full_path" | xargs git add
+else
+  printf "\n⛷️ No staged changes to TypeScript, JavaScript, JSON or Styles: Skipping formatting\n\n"
+fi
+
+exit 0

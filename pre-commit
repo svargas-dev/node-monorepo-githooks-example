@@ -1,0 +1,43 @@
+#!/bin/bash
+
+## NOTE: For any changes to this file to have an effect you need to re-run
+# `git config --local core.hooksPath .githooks/`
+
+## Opt in
+# Do not run if GIT_HOOKS environment variable is not equal to 1
+# if [ "$GIT_HOOKS" != "1" ]; then
+#   exit 0
+# fi
+
+yellow_text="\e[33m"
+green='\033[42m\033[30m'
+blue='\033[44m\033[30m'
+reset='\033[0m'
+
+echo -e "${yellow_text}The pre-commit hooks will only work from the project root directory${reset}\n"
+package=$(cat package.json)
+
+# This assumes workspaces and directories and names have the same _name and case_
+workspaces=$(echo $package | sed -n 's/.*"workspaces":\s*\[\([^]]*\)\].*/\1/p' | sed 's/"//g' | sed 's/,/ /g')
+
+# Get list of staged changes ignoring deleted files
+staged_changes=$(git diff --name-only --cached | xargs git ls-files --cached)
+
+# Extract unique first level directory from file paths and ignore files in the current directory
+first_level_dirs=$(echo "$staged_changes" | awk -F/ 'NF>1{print $1}' | sort | uniq)
+
+for directory in $first_level_dirs; do
+  case $directory in
+    # Configure workspaces here
+    'server')
+      echo -e "\nRunning pre-commit hooks for ${green}$directory${reset} workspace"
+      ./.githooks/pre-commit-$directory
+      ;;
+    'client')
+      echo -e "\n\nRunning pre-commit hooks for ${blue}$directory${reset} workspace"
+      ./.githooks/pre-commit-$directory
+      ;;
+    *)
+      ;;
+  esac
+done
