@@ -12,8 +12,8 @@ ts_js_staged_changes=$(echo "$server_staged_changes" | grep -E "\.(js|ts)$")
 
 if ! [ -z $ts_js_staged_changes ]; then
   printf "\nℹ️ Type checking workspace\n⚠️ This includes unstaged changes\n\n" && \
-  # Tip: create a workspace script `"ts:check": "tsc --noEmit"` to type check with your project settings
-  npm run ts:check -w=$workspace && \
+  # Tip: create a workspace script `"lint:types": "tsc --noEmit"` to type check with your project settings
+  npm run lint:types -w=$workspace && \
   printf "\nℹ️ Linting staged files in workspace" && \
   npm run lint -w=$workspace -- --fix $ts_js_staged_changes
   # check the exit code

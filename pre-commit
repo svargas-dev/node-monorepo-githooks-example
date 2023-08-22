@@ -1,10 +1,11 @@
 #!/bin/bash
 
-## NOTE: For any changes to this file to have an effect you need to re-run
-# `git config --local core.hooksPath .githooks/`
+## NOTE: For any changes to this file to have an effect you need to re-run `git config` e.g.
+# `git config --local core.hooksPath .git/hooks/`
 
 ## Opt in
-# Do not run if GIT_HOOKS environment variable is not equal to 1
+# Only run the pre-commit hooks when the env var GIT_HOOKS is set to 1 e.g.
+# `GIT_HOOKS=1 git commit`
 # if [ "$GIT_HOOKS" != "1" ]; then
 #   exit 0
 # fi
