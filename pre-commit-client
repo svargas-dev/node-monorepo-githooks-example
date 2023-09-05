@@ -10,19 +10,24 @@ client_staged_changes=$(echo "$client_staged_changes_full_path" | sed "s/^$works
 ts_js_staged_changes_full_path=$(echo "$client_staged_changes_full_path" | grep -E "\.(js|jsx|ts|tsx)$")
 ts_js_staged_changes=$(echo "$client_staged_changes" | grep -E "\.(js|jsx|ts|tsx)$")
 
-if ! [ -z $ts_js_staged_changes ]; then
-  printf "\nℹ️ Type checking workspace\n⚠️ This includes unstaged changes\n\n" && \
-  # Tip: create a workspace script `"lint:types": "tsc --noEmit"` to type check with your project settings
-  npm run lint:types -w=$workspace && \
-  printf "\nℹ️ Linting staged files in workspace\n" && \
-  npm run lint -w=$workspace -- --fix --max-warnings 0 --file $ts_js_staged_changes
-  # check the exit code
-  if [ $? -ne 0 ]; then
-    exit 1
-  fi
-  echo "$ts_js_staged_changes_full_path" | xargs git add
+if [ -n "$ts_js_staged_changes" ]; then
+	printf "\nℹ️ Type checking workspace\n⚠️ This includes unstaged changes\n\n" &&
+		# Tip: create a workspace script `"lint:types": "tsc --noEmit"` to type check with your project settings
+		npm run lint:types -w=$workspace &&
+		printf "\nℹ️ Linting staged files in workspace\n" &&
+		# Next lint is a wrapper for ESLint preconfigured for Next but with different params
+		files="" &&
+		for file in $ts_js_staged_changes; do
+			files="$files --file $file"
+		done &&
+		npm run lint -w=$workspace -- --fix --max-warnings 0 $files
+	# check the exit code
+	if [ $? -ne 0 ]; then
+		exit 1
+	fi
+	echo "$ts_js_staged_changes_full_path" | xargs git add
 else
-  printf "\n⛷️ No staged changes to TypeScript or JavaScript: Skipping type checking and linting\n"
+	printf "\n⛷️ No staged changes to TypeScript or JavaScript: Skipping type checking and linting\n"
 fi
 
 # TODO add Stylelint here e.g.
@@ -36,12 +41,12 @@ fi
 
 prettier_staged_changes_full_path=$(echo "$client_staged_changes_full_path" | grep -E "\.(js|jsx|ts|tsx|json|css|scss)$")
 if [ -n "$prettier_staged_changes_full_path" ]; then
-  printf "\nℹ️ Formatting staged TypeScript, JavaScript, JSON and Styles in workspace\n" && \
-  echo "$prettier_staged_changes_full_path" | xargs ./node_modules/.bin/prettier --ignore-unknown --write
-  # Commit formatted files
-  echo "$prettier_staged_changes_full_path" | xargs git add
+	printf "\nℹ️ Formatting staged TypeScript, JavaScript, JSON and Styles in workspace\n" &&
+		echo "$prettier_staged_changes_full_path" | xargs ./node_modules/.bin/prettier --ignore-unknown --write
+	# Commit formatted files
+	echo "$prettier_staged_changes_full_path" | xargs git add
 else
-  printf "\n⛷️ No staged changes to TypeScript, JavaScript, JSON or Styles: Skipping formatting\n\n"
+	printf "\n⛷️ No staged changes to TypeScript, JavaScript, JSON or Styles: Skipping formatting\n\n"
 fi
 
 exit 0

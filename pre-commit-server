@@ -10,28 +10,28 @@ server_staged_changes=$(echo "$server_staged_changes_full_path" | sed "s/^$works
 ts_js_staged_changes_full_path=$(echo "$server_staged_changes_full_path" | grep -E "\.(js|ts)$")
 ts_js_staged_changes=$(echo "$server_staged_changes" | grep -E "\.(js|ts)$")
 
-if ! [ -z $ts_js_staged_changes ]; then
-  printf "\nℹ️ Type checking workspace\n⚠️ This includes unstaged changes\n\n" && \
-  # Tip: create a workspace script `"lint:types": "tsc --noEmit"` to type check with your project settings
-  npm run lint:types -w=$workspace && \
-  printf "\nℹ️ Linting staged files in workspace" && \
-  npm run lint -w=$workspace -- --fix $ts_js_staged_changes
-  # check the exit code
-  if [ $? -ne 0 ]; then
-    exit 1
-  fi
-  echo "$ts_js_staged_changes_full_path" | xargs git add
+if [ -n "$ts_js_staged_changes" ]; then
+	printf "\nℹ️ Type checking workspace\n⚠️ This includes unstaged changes\n\n" &&
+		# Tip: create a workspace script `"lint:types": "tsc --noEmit"` to type check with your project settings
+		npm run lint:types -w=$workspace &&
+		printf "\nℹ️ Linting staged files in workspace" &&
+		npm run lint -w=$workspace -- --fix $ts_js_staged_changes
+	# check the exit code
+	if [ $? -ne 0 ]; then
+		exit 1
+	fi
+	echo "$ts_js_staged_changes_full_path" | xargs git add
 else
-  printf "\n⛷️ No staged changes to TypeScript or JavaScript: Skipping type checking and linting\n"
+	printf "\n⛷️ No staged changes to TypeScript or JavaScript: Skipping type checking and linting\n"
 fi
 
 prettier_staged_changes_full_path=$(echo "$server_staged_changes_full_path" | grep -E "\.(js|ts|json)$")
 if [ -n "$prettier_staged_changes_full_path" ]; then
-  printf "\nℹ️ Formatting staged TypeScript and JavaScript in workspace\n" && \
-  echo "$prettier_staged_changes_full_path" | xargs ./node_modules/.bin/prettier --ignore-unknown --write
-  echo "$prettier_staged_changes_full_path" | xargs git add
+	printf "\nℹ️ Formatting staged TypeScript and JavaScript in workspace\n" &&
+		echo "$prettier_staged_changes_full_path" | xargs ./node_modules/.bin/prettier --ignore-unknown --write
+	echo "$prettier_staged_changes_full_path" | xargs git add
 else
-  printf "\n⛷️ No staged changes to TypeScript or JavaScript: Skipping formatting\n\n"
+	printf "\n⛷️ No staged changes to TypeScript or JavaScript: Skipping formatting\n\n"
 fi
 
 exit 0

@@ -41,7 +41,7 @@ But with zero dependencies
 ### Prequisites
 
 - Git v1.5.0+
-- Unix or unix-like environment (tested with zsh on Mac 13 Ventura and Ubuntu 22.04)
+- Unix or unix-like environment (tested with zsh on Mac 13 Ventura, Ubuntu 22.04 & Fedora 38)
 
 ### Assumptions
 
@@ -66,7 +66,8 @@ Both can be easily edited
 
 1. Follow steps 1-5 above.
 2. Choose the directory you'd like to store these scripts e.g. `.githooks/`
-3. Edit your package.json adding a prepare script:
+3. Update the workspace script paths in `pre-commit`
+4. Edit your package.json adding a prepare script:
 
 ```
 "scripts": {
@@ -75,6 +76,8 @@ Both can be easily edited
 ```
 
 - Note: If using CI you will most likely not want to initialise these scripts. Take a look at the [Husky guide](https://typicode.github.io/husky/guide.html#disable-husky-in-ci-docker-prod) for further advice.
+
+5. Run the prepare script e.g. `$ npm run prepare` or just run `$ npm i` again
 
 ### How do I opt out of the hooks?
 
@@ -95,7 +98,7 @@ Sometimes you don't want these checks to run by default
 GIT_HOOKS=1 git commit
 ```
 
-3. If you so choose, you could alias this to a shorter command
+3. If you so choose, you could alias (git alias or shell alias) this to a shorter command
 
 That's it!
 

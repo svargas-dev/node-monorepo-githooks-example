@@ -28,17 +28,16 @@ staged_changes=$(git diff --name-only --cached | xargs git ls-files --cached)
 first_level_dirs=$(echo "$staged_changes" | awk -F/ 'NF>1{print $1}' | sort | uniq)
 
 for directory in $first_level_dirs; do
-  case $directory in
-    # Configure workspaces here
-    'server')
-      echo -e "\nRunning pre-commit hooks for ${green}$directory${reset} workspace"
-      ./pre-commit-$directory
-      ;;
-    'client')
-      echo -e "\n\nRunning pre-commit hooks for ${blue}$directory${reset} workspace"
-      ./pre-commit-$directory
-      ;;
-    *)
-      ;;
-  esac
+	case $directory in
+	# Configure workspaces here
+	'server')
+		echo -e "\nRunning pre-commit hooks for ${green}$directory${reset} workspace"
+		./.git/hooks/pre-commit-$directory
+		;;
+	'client')
+		echo -e "\n\nRunning pre-commit hooks for ${blue}$directory${reset} workspace"
+		./.git/hooks/pre-commit-$directory
+		;;
+	*) ;;
+	esac
 done
